@@ -1,0 +1,15 @@
+<annotation>
+    <folder>{folder}</folder>
+    <filename>{filename}</filename>
+    <path>{path}</path>
+    <source>
+        <database>{database}</database>
+    </source>
+    <size>
+        <width>{width}</width>
+        <height>{height}</height>
+        <depth>{depth}</depth>
+    </size>
+    <segmented>{segmented}</segmented>
+    {objects}
+</annotation>
