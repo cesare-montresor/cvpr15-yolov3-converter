@@ -11,5 +11,5 @@
         <depth>{depth}</depth>
     </size>
     <segmented>{segmented}</segmented>
-    {objects}
+{objects}
 </annotation>

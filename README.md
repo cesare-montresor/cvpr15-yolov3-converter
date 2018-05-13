@@ -5,3 +5,4 @@
 - copy all the *.avi and *.txt you like in the ./src/ folder
 - run main.py
 
+q

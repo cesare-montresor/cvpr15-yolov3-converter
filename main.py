@@ -1,15 +1,27 @@
 import cv2
 from moviepy.editor import VideoFileClip
 import re
-from os.path import basename, abspath
+import numpy as np
+from os.path import basename, abspath, splitext
+import pathlib
 from copy import copy, deepcopy
+from sklearn.utils import shuffle
 import glob
+
+def mkdir(dir): pathlib.Path(dir).mkdir(parents=True, exist_ok=True)
 
 
 srcdir = './src/'
-dstdir = './dst/'
-dstdir_img = dstdir + 'images/'
-dstdir_ann = dstdir + 'annots/'
+dst = './VOC_CVPR15/'
+dst_img = dst + 'JPEGImages/'
+dst_ann = dst + 'Annotations/'
+dst_set = dst + 'ImageSets/Main/'
+
+mkdir(srcdir)
+mkdir(dst)
+mkdir(dst_img)
+mkdir(dst_ann)
+mkdir(dst_set)
 
 file_format = '{0:05d}'
 absolute_paths = False
@@ -49,14 +61,38 @@ def main():
         # add 'path' and filter empty
         
         video_src = srcdir + name + '.avi'
-        image_dst = dstdir_img + name + '-' + file_format + '.jpeg'
+        image_dst = dst_img + name + '-' + file_format + '.jpg'
         index = extract_images_from_video(video_src, image_dst, index=index,  debug=True)
         
-        ann_dst = dstdir_ann + name + '-' + file_format + '.xml'
-        write_yolo_annotations(template,template_object,index, ann_dst)
+        ann_dst = dst_ann + name + '-' + file_format + '.xml'
+        write_voc_annotations(template,template_object,index, ann_dst)
+        
+    write_imagesets(dst_set,index)
+
+def write_imagesets(path_set,index,train=0.7,val=0.2,test=0.1):
+    seed = 60574836
+    items = list(index.values())
+    shuffle(items,random_state=seed)
+    cnt = len(items)
+    filenames = ['train.txt','val.txt','test.txt']
     
-    
-def write_yolo_annotations(template, template_object, index, ann_dst):
+    splits = np.array([train,val,test])
+    print(splits)
+    splits = splits/np.sum(splits)
+    splits = splits
+    sizes = np.array(splits*cnt,np.int)
+    print(cnt,' == ',np.sum(sizes),' | ',sizes)
+    pos = 0
+    for filename,size in zip(filenames,sizes):
+        portion = items[pos:pos+size]
+        pos += size
+        with open(path_set + filename,'w') as outfile:
+            for entry in portion:
+                name = entry['filename']
+                outfile.write(name+"\n")
+            
+        
+def write_voc_annotations(template, template_object, index, ann_dst):
     for key in index:
         entry = index[key]
         entry_txt = ''
@@ -154,7 +190,7 @@ def extract_images_from_video(filename, dst_img, index, debug=False):
                     idx[count]['boxes'] = yolo_boxes
                 
                 path = dst_img.format(count)
-                idx[count]['filename'] = basename(path)
+                idx[count]['filename'] = splitext(basename(path))[0]
                 idx[count]['path'] = abspath(path) if absolute_paths else path
                 cv2.imwrite(path, frame)
            
@@ -171,6 +207,7 @@ def load_file(filename):
 def write_file(filename,content):
     with open(filename,'w') as f:
         return f.write(content)
+
 
 
 if __name__ == "__main__":
