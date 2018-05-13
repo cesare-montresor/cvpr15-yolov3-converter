@@ -12,7 +12,7 @@ def mkdir(dir): pathlib.Path(dir).mkdir(parents=True, exist_ok=True)
 
 
 srcdir = './src/'
-dst = './VOC_CVPR15/'
+dst = './VOCCVPR15/'
 dst_img = dst + 'JPEGImages/'
 dst_ann = dst + 'Annotations/'
 dst_set = dst + 'ImageSets/Main/'
